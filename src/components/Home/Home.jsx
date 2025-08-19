@@ -1,43 +1,55 @@
+
 import React, { useState, useEffect } from "react";
-import {FiX} from "react-icons/fi"
+import { FiX } from "react-icons/fi"
 
 // Ensure you have your Unsplash access key set in the .env file
 // Example: YOUR_UNSPLASH_ACCESS_KEY="your_access_key_here"
 // Make sure to restart your development server after adding the .env file
 
-const accessKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
 
-
-if (!import.meta.env.VITE_UNSPLASH_ACCESS_KEY) {
-  console.error("YOUR_UNSPLASH_ACCESS_KEY is not set in .env file");
-} // Ensure the access key is set
-
-
-
-export default function ImageGallery() {
-
+export default function Home() {
   const [images, setImages] = useState([]);
-  const [query, setQuery] = useState("nature"); // default search
   const [selectedImage, setSelectedImage] = useState(null);
+  const [query, setQuery] = useState("nature");
+  const [page, setPage] = useState(1); // 🔹 current page
+  const [loading, setLoading] = useState(false);
+  const accessKey = import.meta.env.VITE_UNSPLASH_ACCESS_KEY; // Vite (CRA => process.env.REACT_APP_UNSPLASH_ACCESS_KEY)
 
 
+  // Fetch images
+  const fetchImages = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `https://api.unsplash.com/search/photos?query=${query}&page=${page}&per_page=12&client_id=${accessKey}`
+      );
+      const data = await res.json();
 
-  useEffect(() => {
-    if (!accessKey) {
-      console.error("Unsplash access key is not defined. Please check your .env file.");
-      return;
+      // Append new images if loading more
+      if (page === 1) {
+        setImages(data.results);
+      } else {
+        setImages((prev) => [...prev, ...data.results]);
+      }
+    } catch (err) {
+      console.error(err);
     }
-    // Fetch images from Unsplash API based on the search query
-    fetch(`https://api.unsplash.com/search/photos?query=${query}&per_page=20&client_id=${accessKey}`)
-      .then((res) => res.json())
-      .then((data) => setImages(data.results))
-      .catch((err) => console.error(err));
-  }, [query]);
+    setLoading(false);
+  };
+
+  // Initial & on search/page change
+  useEffect(() => {
+    fetchImages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, query]);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    const input = e.target.search.value;
-    setQuery(input);
+    const input = e.target.search.value.trim();
+    if (input) {
+      setQuery(input);
+      setPage(1); // reset page when new search
+    }
   };
 
   return (
@@ -48,9 +60,12 @@ export default function ImageGallery() {
           type="text"
           name="search"
           placeholder="Search images..."
-          className="border p-2 rounded-l-md w-64 focus:outline-none border-blue-400"
+          className="border p-2 rounded-l-md w-64"
         />
-        <button type="submit" className="bg-blue-500 ring-2 cursor-pointer font-bold  text-white px-4 rounded-r-md">
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 rounded-r-md"
+        >
           Search
         </button>
       </form>
@@ -58,41 +73,41 @@ export default function ImageGallery() {
       {/* 🖼️ Image Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {images.map((img) => (
-          <div key={img.id}
-           className="relative group cursor-pointer"
+          <div
+            key={img.id}
+            className="relative group cursor-pointer"
             onClick={() => setSelectedImage(img)}
-            >
+          >
             <img
               src={img.urls.small}
               alt={img.alt_description}
               className="w-full h-64 object-cover rounded-md shadow-md"
             />
-            {/* ⬇️ Download Button */}
             <a
               href={`${img.links.download}?force=true`}
               target="_blank"
               rel="noopener noreferrer"
-               onClick={(e) => e.stopPropagation()}
               className="absolute bottom-2 right-2 bg-black text-white px-2 py-1 rounded-md text-sm opacity-80 group-hover:opacity-100 transition"
             >
               Download
             </a>
           </div>
         ))}
-        <div>
-          {images.length === 0 && (
-            <p className="text-center text-gray-500">No images found. Try a different search.</p>
-          )}
-        </div>
+      </div>
+
+      {/* 🔽 Load More */}
+      <div className="flex justify-center mt-6">
+        <button
+          onClick={() => setPage((prev) => prev + 1)}
+          disabled={loading}
+          className="bg-green-500 text-white px-6 py-2 rounded-md shadow-md hover:bg-green-600 disabled:opacity-50"
+        >
+          {loading ? "Loading..." : "Load More"}
+        </button>
+
+      </div>
         <div className="w-full text-center">
-          <button
-            onClick={() => setQuery("nature")} // Reset to default search
-            className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4 cursor-pointer hover:bg-blue-600 transition"  
-          >
-            Load Nature Images
-          </button>
-        </div>
-        <div className="w-full text-center">
+          {/* Display search results */}
 
           <div>
             <p className="text-center text-gray-500 mt-4">
@@ -110,7 +125,6 @@ export default function ImageGallery() {
             </a>
           </button>
         </div>
-      </div>
 
 
 
@@ -157,22 +171,39 @@ export default function ImageGallery() {
         </div>
       )}
 
-      {/* 🖼️ Image Thumbnails */}
-      {/* <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {images.map((img) => (
-          <div
-            key={img.id} className="cursor-pointer" onClick={() => setSelectedImage(img)}>
-
-            <img
-              src={img.urls.thumb}
-              alt={img.alt_description}
-              className="w-full h-24 object-cover rounded-md shadow-sm hover:shadow-lg transition"
-            />
-          </div>
-        ))}
-      </div> */}
-
-    </div >
+    </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
