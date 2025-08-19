@@ -1,0 +1,45 @@
+ /* @tailwind base;
+ @tailwind components;
+ @tailwind utilities; */
+
+
+ @import "tailwindcss";
+ 
+
+ :root {
+
+
+   /* theme --variables  */
+   --primary-color: #1e90ff;
+   /* Dodger Blue */
+   --secondary-color: #6495ed;
+   /* Cornflower Blue */
+   --background-light: #ffffff;
+   /* White */
+   --background-dark: #333333;
+   /* Dark Grey */
+   --text-color-light: #000000;
+   /* Black */
+   --text-color-dark: #ffffff;
+   /* White */
+
+
+
+   color-scheme: light;
+
+   font-synthesis: none;
+   text-rendering: optimizeLegibility;
+   -webkit-font-smoothing: antialiased;
+   -moz-osx-font-smoothing: grayscale;
+ }
+
+ .btn {
+  @apply bg-gradient-to-r mb-4 from-blue-700 to-fuchsia-700  p-2 rounded-xl text-white font-semibold flex justify-center items-center gap-2 pr-4 cursor-pointer hover:scale-105 transition-all
+  /*      */
+
+}
+
+
+ 
+
+ 
