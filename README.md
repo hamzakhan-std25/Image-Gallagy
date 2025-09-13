@@ -3,6 +3,7 @@
 
 A simple, modern, and responsive image gallery built with React and Vite. Easily upload, preview, download, and manage your images in a beautiful grid layout.
 
+![preview](./public/rendom-gallery.png)
 
 ## Features
 
